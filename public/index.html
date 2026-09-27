@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Smart Slip Scanner - AI Handwriting Scanner</title>
+
+  <meta
+    name="description"
+    content="Multilingual AI handwriting slip scanner, number calculator and computerized receipt maker."
+  >
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="logo">
+      🧾 Smart Slip Scanner
+    </div>
+
+    <div class="status">
+      AI Scanner
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <h1>पर्ची को स्मार्ट तरीके से स्कैन करें</h1>
+
+      <p>
+        अलग-अलग लोगों की अलग-अलग लिखावट और कई भाषाओं वाली
+        पर्चियों को स्कैन करके टेक्स्ट, अंक और हिसाब निकालें।
+      </p>
+    </section>
+
+    <section class="scanner-card">
+
+      <div class="scanner-icon">
+        📷
+      </div>
+
+      <h2>पर्ची स्कैन करें</h2>
+
+      <p class="muted">
+        कैमरा से फोटो लें या अपने मोबाइल से पर्ची की फोटो चुनें।
+      </p>
+
+      <div class="language-box">
+
+        <label for="language">
+          पर्ची की भाषा
+        </label>
+
+        <select id="language">
+          <option value="auto">
+            🌐 भाषा अपने-आप पहचानें
+          </option>
+
+          <option value="hi">
+            हिंदी
+          </option>
+
+          <option value="en">
+            English
+          </option>
+
+          <option value="mixed">
+            हिंदी + English
+          </option>
+
+          <option value="mr">
+            मराठी
+          </option>
+
+          <option value="bn">
+            বাংলা
+          </option>
+
+          <option value="gu">
+            ગુજરાતી
+          </option>
+
+          <option value="pa">
+            ਪੰਜਾਬੀ
+          </option>
+
+          <option value="ta">
+            தமிழ்
+          </option>
+
+          <option value="te">
+            తెలుగు
+          </option>
+
+          <option value="kn">
+            ಕನ್ನಡ
+          </option>
+
+          <option value="ml">
+            മലയാളം
+          </option>
+
+          <option value="ur">
+            اردو
+          </option>
+        </select>
+
+      </div>
+
+      <div class="upload-area">
+
+        <label class="upload-button">
+
+          📷 कैमरा से स्कैन करें
+
+          <input
+            id="cameraInput"
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+          >
+
+        </label>
+
+        <label class="upload-button secondary">
+
+          🖼️ फोटो चुनें
+
+          <input
+            id="fileInput"
+            type="file"
+            accept="image/*"
+            hidden
+          >
+
+        </label>
+
+      </div>
+
+      <div id="previewBox" class="preview-box hidden">
+
+        <img
+          id="previewImage"
+          alt="Slip Preview"
+        >
+
+        <div class="preview-actions">
+
+          <button id="removeImage" class="danger">
+            ✕ हटाएँ
+          </button>
+
+          <button id="scanButton" class="primary">
+            🔍 पर्ची पढ़ें
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="features">
+
+      <div class="feature">
+        <span>✍️</span>
+        <h3>Handwriting</h3>
+        <p>
+          अलग-अलग प्रकार की लिखावट को पहचानने के लिए बनाया गया सिस्टम।
+        </p>
+      </div>
+
+      <div class="feature">
+        <span>🌐</span>
+        <h3>Multilingual</h3>
+        <p>
+          कई भारतीय भाषाओं और English को सपोर्ट करने की योजना।
+        </p>
+      </div>
+
+      <div class="feature">
+        <span>🧮</span>
+        <h3>Calculation</h3>
+        <p>
+          पहचाने गए अंकों से अपने-आप हिसाब और Total।
+        </p>
+      </div>
+
+      <div class="feature">
+        <span>🧾</span>
+        <h3>Computerized Slip</h3>
+        <p>
+          हाथ से लिखी पर्ची को साफ डिजिटल पर्ची में बदलना।
+        </p>
+      </div>
+
+    </section>
+
+
+    <section id="resultSection" class="result-section hidden">
+
+      <h2>पहचाना गया परिणाम</h2>
+
+      <div id="resultContent"></div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    <p>
+      © 2026 Smart Slip Scanner
+    </p>
+  </footer>
+
+  <script src="/app.js"></script>
+
+</body>
+                                       </html>
