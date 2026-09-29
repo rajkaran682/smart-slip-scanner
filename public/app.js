@@ -16,7 +16,7 @@ let selectedFile = null;
 
 
 /* =========================================
-   IMAGE SELECTION
+   IMAGE
 ========================================= */
 
 function handleImage(file) {
@@ -47,35 +47,45 @@ function handleImage(file) {
 }
 
 
-cameraInput.addEventListener("change", function () {
-  handleImage(this.files[0]);
-});
+cameraInput.addEventListener(
+  "change",
+  function () {
+    handleImage(this.files[0]);
+  }
+);
 
 
-fileInput.addEventListener("change", function () {
-  handleImage(this.files[0]);
-});
+fileInput.addEventListener(
+  "change",
+  function () {
+    handleImage(this.files[0]);
+  }
+);
 
 
 /* =========================================
-   REMOVE IMAGE
+   REMOVE
 ========================================= */
 
-removeImage.addEventListener("click", function () {
+removeImage.addEventListener(
+  "click",
+  function () {
 
-  selectedFile = null;
+    selectedFile = null;
 
-  previewImage.src = "";
+    previewImage.src = "";
 
-  previewBox.classList.add("hidden");
+    previewBox.classList.add("hidden");
 
-  resultSection.classList.add("hidden");
+    resultSection.classList.add("hidden");
 
-  resultContent.innerHTML = "";
+    resultContent.innerHTML = "";
 
-  cameraInput.value = "";
-  fileInput.value = "";
-});
+    cameraInput.value = "";
+    fileInput.value = "";
+
+  }
+);
 
 
 /* =========================================
@@ -84,16 +94,22 @@ removeImage.addEventListener("click", function () {
 
 function fileToDataURL(file) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (resolve, reject) => {
 
-    const reader = new FileReader();
+      const reader =
+        new FileReader();
 
-    reader.onload = () => resolve(reader.result);
+      reader.onload =
+        () => resolve(reader.result);
 
-    reader.onerror = reject;
+      reader.onerror =
+        reject;
 
-    reader.readAsDataURL(file);
-  });
+      reader.readAsDataURL(file);
+
+    }
+  );
 }
 
 
@@ -101,176 +117,180 @@ function fileToDataURL(file) {
    IMAGE PREPROCESSING
 ========================================= */
 
-function preprocessImage(dataURL, mode = "normal") {
+function preprocessImage(
+  dataURL,
+  mode = "normal"
+) {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(
+    (resolve, reject) => {
 
-    const img = new Image();
+      const img =
+        new Image();
 
-    img.onload = function () {
+      img.onload =
+        function () {
 
-      /*
-       * बहुत बड़े फोटो को सीमित करते हैं।
-       * इससे मोबाइल पर browser crash होने की संभावना कम होगी।
-       */
+          const maxWidth = 1800;
+          const maxHeight = 2400;
 
-      const maxWidth = 1800;
-      const maxHeight = 2400;
+          let width = img.width;
+          let height = img.height;
 
-      let width = img.width;
-      let height = img.height;
-
-      const ratio = Math.min(
-        maxWidth / width,
-        maxHeight / height,
-        1
-      );
-
-      width = Math.round(width * ratio);
-      height = Math.round(height * ratio);
-
-
-      const canvas =
-        document.createElement("canvas");
-
-      canvas.width = width;
-      canvas.height = height;
-
-
-      const ctx =
-        canvas.getContext("2d", {
-          willReadFrequently: true
-        });
-
-
-      ctx.imageSmoothingEnabled = true;
-
-      ctx.drawImage(
-        img,
-        0,
-        0,
-        width,
-        height
-      );
-
-
-      if (mode === "normal") {
-
-        resolve(
-          canvas.toDataURL("image/png")
-        );
-
-        return;
-      }
-
-
-      const imageData =
-        ctx.getImageData(
-          0,
-          0,
-          width,
-          height
-        );
-
-
-      const data =
-        imageData.data;
-
-
-      for (
-        let i = 0;
-        i < data.length;
-        i += 4
-      ) {
-
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-
-        let gray =
-          0.299 * r +
-          0.587 * g +
-          0.114 * b;
-
-
-        /*
-         * Contrast
-         */
-
-        if (mode === "contrast") {
-
-          gray =
-            ((gray - 128) * 1.45) + 128;
-        }
-
-
-        /*
-         * Threshold
-         */
-
-        if (mode === "threshold") {
-
-          gray =
-            gray < 165
-              ? 0
-              : 255;
-        }
-
-
-        /*
-         * Clean
-         */
-
-        if (mode === "clean") {
-
-          gray =
-            gray < 185
-              ? 0
-              : 255;
-        }
-
-
-        gray =
-          Math.max(
-            0,
+          const ratio =
             Math.min(
-              255,
-              gray
-            )
+              maxWidth / width,
+              maxHeight / height,
+              1
+            );
+
+          width =
+            Math.round(
+              width * ratio
+            );
+
+          height =
+            Math.round(
+              height * ratio
+            );
+
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+          canvas.width = width;
+          canvas.height = height;
+
+
+          const ctx =
+            canvas.getContext(
+              "2d",
+              {
+                willReadFrequently: true
+              }
+            );
+
+
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            width,
+            height
           );
 
 
-        data[i] = gray;
-        data[i + 1] = gray;
-        data[i + 2] = gray;
-      }
+          if (
+            mode === "normal"
+          ) {
+
+            resolve(
+              canvas.toDataURL(
+                "image/png"
+              )
+            );
+
+            return;
+          }
 
 
-      ctx.putImageData(
-        imageData,
-        0,
-        0
-      );
+          const imageData =
+            ctx.getImageData(
+              0,
+              0,
+              width,
+              height
+            );
 
 
-      resolve(
-        canvas.toDataURL("image/png")
-      );
-
-    };
+          const data =
+            imageData.data;
 
 
-    img.onerror = reject;
+          for (
+            let i = 0;
+            i < data.length;
+            i += 4
+          ) {
 
-    img.src = dataURL;
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
 
-  });
+
+            let gray =
+              0.299 * r +
+              0.587 * g +
+              0.114 * b;
+
+
+            if (
+              mode === "contrast"
+            ) {
+
+              gray =
+                ((gray - 128) * 1.45)
+                + 128;
+            }
+
+
+            if (
+              mode === "clean"
+            ) {
+
+              gray =
+                gray < 185
+                  ? 0
+                  : 255;
+            }
+
+
+            gray =
+              Math.max(
+                0,
+                Math.min(
+                  255,
+                  gray
+                )
+              );
+
+
+            data[i] = gray;
+            data[i + 1] = gray;
+            data[i + 2] = gray;
+
+          }
+
+
+          ctx.putImageData(
+            imageData,
+            0,
+            0
+          );
+
+
+          resolve(
+            canvas.toDataURL(
+              "image/png"
+            )
+          );
+
+        };
+
+
+      img.onerror = reject;
+
+      img.src = dataURL;
+
+    }
+  );
 }
 
 
 /* =========================================
-   OCR LANGUAGE
+   LANGUAGE
 ========================================= */
 
 function getOCRLanguage() {
@@ -280,32 +300,56 @@ function getOCRLanguage() {
 
 
   /*
-   * अभी Tesseract में Hindi और English
-   * उपलब्ध हैं।
-   *
-   * Mixed/Auto के लिए English fallback
-   * रखा गया है।
-   *
-   * आगे dedicated multilingual
-   * handwriting engine लगाया जाएगा।
+   * हिंदी
    */
 
-  if (selected === "hi") {
+  if (
+    selected === "hi"
+  ) {
+
     return "hin";
   }
 
 
-  return "eng";
+  /*
+   * English
+   */
+
+  if (
+    selected === "en"
+  ) {
+
+    return "eng";
+  }
+
+
+  /*
+   * Hindi + English
+   *
+   * Tesseract.js में दोनों traineddata
+   * उपलब्ध होने पर संयुक्त OCR।
+   */
+
+  if (
+    selected === "mixed" ||
+    selected === "auto"
+  ) {
+
+    return "eng+hin";
+  }
+
+
+  return "eng+hin";
 }
 
 
 /* =========================================
-   OCR STATUS
+   STATUS
 ========================================= */
 
-function updateOCRStatus(
-  text,
-  percent
+function updateStatus(
+  message,
+  progress
 ) {
 
   const status =
@@ -313,212 +357,183 @@ function updateOCRStatus(
       "ocrStatus"
     );
 
-  const progress =
+  const progressBar =
     document.getElementById(
       "ocrProgress"
     );
 
-  const percentText =
+  const percent =
     document.getElementById(
       "ocrPercent"
     );
 
 
   if (status) {
-    status.textContent = text;
+    status.textContent =
+      message;
   }
 
 
   if (
-    progress &&
-    typeof percent === "number"
+    progressBar &&
+    typeof progress === "number"
   ) {
 
-    progress.style.width =
-      `${percent}%`;
+    progressBar.style.width =
+      `${progress}%`;
   }
 
 
-  if (percentText) {
+  if (percent) {
 
-    percentText.textContent =
-      `${Math.round(percent)}%`;
+    percent.textContent =
+      `${Math.round(progress)}%`;
   }
 }
 
 
 /* =========================================
-   RUN OCR
+   LOCAL TESSERACT OCR
 ========================================= */
 
-async function runOneOCR(
+async function runTesseractOCR(
   image,
   language,
   label
 ) {
 
-  const result =
-    await Tesseract.recognize(
-      image,
-      language,
-      {
+  return await Tesseract.recognize(
+    image,
+    language,
+    {
 
-        logger: message => {
+      logger: message => {
 
-          if (
-            typeof message.progress ===
-            "number"
-          ) {
+        if (
+          typeof message.progress ===
+          "number"
+        ) {
 
-            updateOCRStatus(
-              `${label}: ${message.status || "पढ़ा जा रहा है..."}`,
-              message.progress * 100
-            );
-          }
+          updateStatus(
+            `${label}: ${
+              message.status ||
+              "पढ़ा जा रहा है..."
+            }`,
+            message.progress * 100
+          );
         }
 
       }
-    );
 
-
-  return result;
+    }
+  );
 }
 
 
 /* =========================================
-   TEXT CLEANING
+   TRY DEDICATED AI
 ========================================= */
 
-function cleanOCRText(text) {
+async function runHandwritingAI(
+  image,
+  language
+) {
 
-  if (!text) {
-    return "";
+  try {
+
+    const response =
+      await fetch(
+        "/api/ocr/handwriting",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            image,
+
+            language
+
+          })
+
+        }
+      );
+
+
+    if (!response.ok) {
+
+      return null;
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.success ||
+      !data.data
+    ) {
+
+      return null;
+    }
+
+
+    return data;
+
+  } catch (error) {
+
+    console.log(
+      "Dedicated handwriting AI unavailable."
+    );
+
+    return null;
   }
+}
 
 
-  return text
+/* =========================================
+   CLEAN TEXT
+========================================= */
+
+function cleanText(text) {
+
+  return (text || "")
 
     .replace(/\r/g, "")
 
-    /*
-     * बहुत ज्यादा spaces हटाएँ
-     */
+    .replace(
+      /[ \t]+/g,
+      " "
+    )
 
-    .replace(/[ \t]+/g, " ")
-
-    /*
-     * बहुत सारी खाली lines कम करें
-     */
-
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(
+      /\n{3,}/g,
+      "\n\n"
+    )
 
     .trim();
 }
 
 
 /* =========================================
-   SPLIT OCR INTO LINES
+   NUMBER EXTRACTION
 ========================================= */
 
-function splitIntoLines(text) {
+function extractNumbers(text) {
 
-  return cleanOCRText(text)
-
-    .split("\n")
-
-    .map(line =>
-      line.trim()
-    )
-
-    .filter(line =>
-      line.length > 0
-    );
-}
-
-
-/* =========================================
-   NUMBER NORMALIZATION
-========================================= */
-
-function normalizeNumber(value) {
-
-  if (!value) {
-    return null;
-  }
-
-
-  let number =
-    value
-      .replace(/[Oo]/g, "0")
-      .replace(/[Il|]/g, "1")
-      .replace(/[Ss]/g, "5")
-      .replace(/[Bb]/g, "8")
-      .replace(/,/g, ".")
-      .replace(/[^\d.-]/g, "");
-
-
-  /*
-   * शुरुआत में अकेला minus हो
-   * तो हटाएँ।
-   */
-
-  number =
-    number.replace(
-      /^(?!-)\D+/,
-      ""
-    );
-
-
-  const parsed =
-    Number(number);
-
-
-  if (
-    !Number.isFinite(parsed)
-  ) {
-
-    return null;
-  }
-
-
-  /*
-   * बहुत बड़े OCR numbers अक्सर
-   * noise होते हैं।
-   */
-
-  if (
-    Math.abs(parsed) > 100000
-  ) {
-
-    return null;
-  }
-
-
-  return parsed;
-}
-
-
-/* =========================================
-   FIND NUMBER-LIKE VALUES IN ONE LINE
-========================================= */
-
-function extractNumbersFromLine(line) {
-
-  if (!line) {
+  if (!text) {
     return [];
   }
 
 
-  /*
-   * केवल ऐसे groups पकड़ें जिनमें
-   * digit मौजूद हो।
-   *
-   * अकेले punctuation को number
-   * नहीं मानेंगे।
-   */
-
   const matches =
-    line.match(
+    text.match(
       /[-+]?\d+(?:[.,]\d+)?/g
     );
 
@@ -528,302 +543,80 @@ function extractNumbersFromLine(line) {
   }
 
 
-  const numbers = [];
+  const values = [];
 
 
-  matches.forEach(raw => {
+  matches.forEach(
+    raw => {
 
-    const value =
-      normalizeNumber(raw);
-
-
-    if (
-      value === null
-    ) {
-      return;
-    }
-
-
-    /*
-     * एक digit वाला 0/1/5
-     * handwriting OCR में बहुत बार
-     * noise बन जाता है।
-     *
-     * लेकिन यदि line में text कम है
-     * तो उसे पूरी तरह reject नहीं करेंगे।
-     */
-
-    numbers.push({
-      raw,
-      value
-    });
-
-  });
+      let cleaned =
+        raw
+          .replace(/,/g, ".")
+          .replace(
+            /[^\d.-]/g,
+            ""
+          );
 
 
-  return numbers;
-}
-
-
-/* =========================================
-   CHECK WHETHER LINE LOOKS LIKE A PRICE
-========================================= */
-
-function looksLikeAmountLine(line) {
-
-  if (!line) {
-    return false;
-  }
-
-
-  const lower =
-    line.toLowerCase();
-
-
-  /*
-   * आम amount keywords
-   */
-
-  const amountWords = [
-    "total",
-    "amount",
-    "price",
-    "rate",
-    "rs",
-    "₹",
-    "rup",
-    "qty",
-    "quantity",
-    "item",
-    "pcs",
-    "piece",
-    "kg",
-    "gm",
-    "litre",
-    "liter",
-    "cost",
-    "sum",
-    "योग",
-    "कुल",
-    "रकम",
-    "भाव",
-    "दाम",
-    "कीमत",
-    "मात्रा"
-  ];
-
-
-  for (
-    const word of amountWords
-  ) {
-
-    if (
-      lower.includes(word)
-    ) {
-
-      return true;
-    }
-  }
-
-
-  /*
-   * अगर line में number है और
-   * line छोटी है तो यह slip का
-   * amount/quantity line हो सकता है।
-   */
-
-  const numbers =
-    extractNumbersFromLine(line);
-
-
-  if (
-    numbers.length > 0 &&
-    line.length <= 45
-  ) {
-
-    return true;
-  }
-
-
-  return false;
-}
-
-
-/* =========================================
-   BUILD CANDIDATE AMOUNTS
-========================================= */
-
-function buildAmountCandidates(
-  text,
-  confidence
-) {
-
-  const lines =
-    splitIntoLines(text);
-
-
-  const candidates = [];
-
-
-  lines.forEach(
-    (line, lineIndex) => {
-
-      const numbers =
-        extractNumbersFromLine(
-          line
-        );
+      const value =
+        Number(cleaned);
 
 
       if (
-        numbers.length === 0
+        Number.isFinite(value) &&
+        Math.abs(value) <= 100000
       ) {
 
-        return;
+        values.push(value);
       }
-
-
-      const isAmountLine =
-        looksLikeAmountLine(
-          line
-        );
-
-
-      /*
-       * बहुत लंबी OCR line में
-       * मिलने वाले सारे numbers को
-       * amount नहीं मानेंगे।
-       */
-
-      if (
-        !isAmountLine &&
-        line.length > 70
-      ) {
-
-        return;
-      }
-
-
-      numbers.forEach(
-        (item, numberIndex) => {
-
-          /*
-           * अकेले 0 को सामान्य OCR noise
-           * मानने की संभावना अधिक है।
-           */
-
-          if (
-            item.value === 0 &&
-            numbers.length === 1 &&
-            line.length < 8
-          ) {
-
-            return;
-          }
-
-
-          candidates.push({
-
-            id:
-              `amount-${lineIndex}-${numberIndex}`,
-
-            value:
-              item.value,
-
-            raw:
-              item.raw,
-
-            line:
-              line,
-
-            confidence:
-              Number.isFinite(confidence)
-                ? Math.round(confidence)
-                : 0
-
-          });
-
-        }
-      );
 
     }
   );
 
 
-  return candidates;
+  return values;
 }
 
 
 /* =========================================
-   REMOVE DUPLICATES
+   DISPLAY RESULT
 ========================================= */
 
-function removeDuplicateCandidates(
-  candidates
-) {
-
-  const unique = [];
-
-  const seen = new Set();
-
-
-  candidates.forEach(item => {
-
-    const key =
-      `${item.value}|${item.line}`;
-
-
-    if (
-      seen.has(key)
-    ) {
-
-      return;
-    }
-
-
-    seen.add(key);
-
-    unique.push(item);
-  });
-
-
-  return unique;
-}
-
-
-/* =========================================
-   DISPLAY OCR RESULT
-========================================= */
-
-function showOCRResult(
+function showResult(
   text,
-  candidates,
-  confidence
+  confidence,
+  numbers,
+  engine
 ) {
 
   const safeText =
     (text || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      );
 
 
   const rows =
-    candidates.length
+    numbers.length
 
-      ? candidates
+      ? numbers
+          .slice(0, 30)
           .map(
-            (item, index) => {
-
-              const warning =
-                item.confidence < 55
-                  ? "low-confidence"
-                  : "";
-
+            (number, index) => {
 
               return `
 
                 <div
-                  class="number-row ${warning}"
+                  class="number-row"
                 >
 
                   <span>
@@ -834,16 +627,13 @@ function showOCRResult(
                     class="detected-number"
                     type="number"
                     step="any"
-                    value="${item.value}"
+                    value="${number}"
                   >
-
-                  <small>
-                    ${item.confidence}%
-                  </small>
 
                 </div>
 
               `;
+
             }
           )
           .join("")
@@ -851,7 +641,7 @@ function showOCRResult(
       : `
 
           <p>
-            अभी कोई भरोसेमंद रकम नहीं मिली।
+            कोई स्पष्ट अंक नहीं मिला।
           </p>
 
         `;
@@ -865,7 +655,11 @@ function showOCRResult(
         🔤 पहचाया गया टेक्स्ट
       </h3>
 
-      <div class="ocr-text">
+      <div
+        class="ocr-text"
+        contenteditable="true"
+        id="editableOCRText"
+      >
         ${
           safeText ||
           "कोई टेक्स्ट नहीं मिला।"
@@ -884,15 +678,25 @@ function showOCRResult(
       </div>
 
 
-      <h3>
-        💰 संभावित रकम / अंक
-      </h3>
+      <div class="confidence-box">
 
+        <strong>
+          OCR Engine:
+        </strong>
+
+        ${engine}
+
+      </div>
+
+
+      <h3>
+        🔢 संभावित अंक
+      </h3>
 
       <p class="ocr-help">
 
-        केवल OCR से संभावित रकम दिखाई गई हैं।
-        कृपया गलत अंक सुधारें और फिर Total देखें।
+        OCR से मिले अंकों को जाँचें।
+        गलत अंक को आप सीधे बदल सकते हैं।
 
       </p>
 
@@ -927,9 +731,8 @@ function showOCRResult(
 
       <div class="ocr-note">
 
-        ⚠️ यह handwriting OCR है।
-        OCR को अंतिम सत्य न मानें।
-        कम confidence वाले अंकों की जाँच करें।
+        ⚠️ कम confidence वाले OCR परिणाम
+        को अंतिम सत्य न मानें।
 
       </div>
 
@@ -947,10 +750,6 @@ function showOCRResult(
       recalculate
     );
 
-
-  /*
-   * शुरुआत में भी total calculate करें।
-   */
 
   recalculate();
 }
@@ -971,20 +770,22 @@ function recalculate() {
   let total = 0;
 
 
-  inputs.forEach(input => {
+  inputs.forEach(
+    input => {
 
-    const value =
-      Number(input.value);
+      const value =
+        Number(input.value);
 
 
-    if (
-      Number.isFinite(value)
-    ) {
+      if (
+        Number.isFinite(value)
+      ) {
 
-      total += value;
+        total += value;
+      }
+
     }
-
-  });
+  );
 
 
   const totalElement =
@@ -1004,7 +805,7 @@ function recalculate() {
 
 
 /* =========================================
-   MAIN OCR PIPELINE
+   MAIN SCAN
 ========================================= */
 
 async function runOCR() {
@@ -1035,7 +836,7 @@ async function runOCR() {
   scanButton.disabled = true;
 
   scanButton.textContent =
-    "⏳ पर्ची समझी जा रही है...";
+    "⏳ AI OCR चल रहा है...";
 
 
   resultSection.classList.remove(
@@ -1048,7 +849,7 @@ async function runOCR() {
     <div class="ocr-loading">
 
       <h3>
-        🔍 पर्ची को समझा जा रहा है...
+        🔍 पर्ची को पढ़ा जा रहा है...
       </h3>
 
       <p id="ocrStatus">
@@ -1076,7 +877,7 @@ async function runOCR() {
 
   try {
 
-    updateOCRStatus(
+    updateStatus(
       "फोटो तैयार की जा रही है...",
       2
     );
@@ -1088,13 +889,79 @@ async function runOCR() {
       );
 
 
+    const language =
+      getOCRLanguage();
+
+
     /*
-     * अभी केवल 2 useful variants
-     * रखे गए हैं।
-     *
-     * इससे mobile पर OCR का load
-     * कम होगा।
+     * पहले dedicated handwriting
+     * endpoint को मौका देंगे।
      */
+
+    updateStatus(
+      "Handwriting AI जाँचा जा रहा है...",
+      5
+    );
+
+
+    const aiResult =
+      await runHandwritingAI(
+        original,
+        language
+      );
+
+
+    if (aiResult) {
+
+      const data =
+        aiResult.data;
+
+
+      const text =
+        cleanText(
+          data.text ||
+          data.result ||
+          ""
+        );
+
+
+      const confidence =
+        Number(
+          data.confidence ||
+          0
+        );
+
+
+      const numbers =
+        Array.isArray(
+          data.numbers
+        )
+          ? data.numbers
+          : extractNumbers(text);
+
+
+      showResult(
+        text,
+        confidence,
+        numbers,
+        "Dedicated Handwriting AI"
+      );
+
+
+      return;
+    }
+
+
+    /*
+     * Dedicated AI उपलब्ध नहीं है,
+     * इसलिए local Tesseract fallback।
+     */
+
+    updateStatus(
+      "Local Hindi + English OCR चल रहा है...",
+      10
+    );
+
 
     const normal =
       await preprocessImage(
@@ -1110,64 +977,48 @@ async function runOCR() {
       );
 
 
-    const language =
-      getOCRLanguage();
-
-
-    updateOCRStatus(
-      "पहला OCR चल रहा है...",
-      5
-    );
-
-
-    const first =
-      await runOneOCR(
+    const result =
+      await runTesseractOCR(
         normal,
         language,
         "Original"
       );
 
 
-    updateOCRStatus(
-      "दूसरा OCR चल रहा है...",
-      50
+    updateStatus(
+      "दूसरी साफ image से जाँच...",
+      55
     );
 
 
-    const second =
-      await runOneOCR(
+    const result2 =
+      await runTesseractOCR(
         clean,
         language,
         "Clean"
       );
 
 
-    /*
-     * दोनों परिणामों में से
-     * बेहतर confidence चुनें।
-     */
-
-    const firstConfidence =
+    const confidence1 =
       Number(
-        first?.data?.confidence || 0
+        result?.data?.confidence || 0
       );
 
 
-    const secondConfidence =
+    const confidence2 =
       Number(
-        second?.data?.confidence || 0
+        result2?.data?.confidence || 0
       );
 
 
     const best =
-      secondConfidence >
-      firstConfidence
-        ? second
-        : first;
+      confidence2 > confidence1
+        ? result2
+        : result;
 
 
     const text =
-      cleanOCRText(
+      cleanText(
         best?.data?.text || ""
       );
 
@@ -1178,55 +1029,21 @@ async function runOCR() {
       );
 
 
-    updateOCRStatus(
-      "OCR परिणाम व्यवस्थित किया जा रहा है...",
-      92
-    );
+    const numbers =
+      extractNumbers(text);
 
 
-    /*
-     * अब पूरे OCR text के हर digit को
-     * जोड़ने के बजाय line-based candidates
-     * बनाए जाते हैं।
-     */
-
-    let candidates =
-      buildAmountCandidates(
-        text,
-        confidence
-      );
-
-
-    candidates =
-      removeDuplicateCandidates(
-        candidates
-      );
-
-
-    /*
-     * अधिकतम 30 candidates ही दिखाएँ।
-     *
-     * यह सुरक्षा है ताकि OCR noise से
-     * सैकड़ों numbers की सूची न बने।
-     */
-
-    candidates =
-      candidates.slice(
-        0,
-        30
-      );
-
-
-    updateOCRStatus(
-      "परिणाम तैयार है...",
+    updateStatus(
+      "परिणाम तैयार किया जा रहा है...",
       100
     );
 
 
-    showOCRResult(
+    showResult(
       text,
-      candidates,
-      confidence
+      confidence,
+      numbers,
+      "Local Tesseract"
     );
 
 
@@ -1254,7 +1071,7 @@ async function runOCR() {
 
         <p>
           पर्ची को पढ़ा नहीं जा सका।
-          कृपया साफ फोटो से फिर प्रयास करें।
+          कृपया फिर प्रयास करें।
         </p>
 
       </div>
@@ -1272,7 +1089,7 @@ async function runOCR() {
 
 
 /* =========================================
-   SCAN BUTTON
+   BUTTON
 ========================================= */
 
 scanButton.addEventListener(
